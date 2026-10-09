@@ -37,7 +37,9 @@ On every push to `main`, `.github/workflows/publish.yml`:
 2. Fetches `MAVEN_USERNAME` / `MAVEN_PASSWORD` from Infisical via OIDC
 3. Runs `./gradlew publishMavenPublicationToSneakyrpRepository`
 
-### Required GitHub secrets
+### GitHub secrets (repository-level setup only for private repos)
+
+Public Team-Sneakymouse repositories inherit the following organization secrets; no repository-level setup is needed. Private repositories must configure these secrets in the repository's GitHub Actions settings.
 
 | Secret | Purpose |
 |--------|---------|
@@ -67,7 +69,8 @@ and add a `compileOnly` / `implementation` dependency as needed.
 5. Update `paper-plugin.yml` (`name`, `main`, `description`, `website`).
 6. Update JAR naming if you keep `archiveFileName` tied to `rootProject.name`.
 7. Point workflow publish task at the same publication name (`maven`) unless you rename it.
-8. Ensure Infisical OIDC allowlists the new repo and org secrets are available.
+8. Ensure Infisical OIDC allowlists the new repo. Public repos inherit the organization secrets; only private repos need repository-level `INFISICAL_IDENTITY_ID` and `INFISICAL_DOMAIN` secrets.
+9. Replace this `README.md` with documentation for your plugin (description, setup, usage, and publishing details).
 
 ## Local build
 
