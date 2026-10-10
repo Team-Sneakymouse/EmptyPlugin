@@ -72,7 +72,16 @@ and add a `compileOnly` / `implementation` dependency as needed.
 6. Update JAR naming if you keep `archiveFileName` tied to `rootProject.name`.
 7. Point workflow publish task at the same publication name (`maven`) unless you rename it.
 8. Ensure Infisical OIDC allowlists the new repo. Public repos inherit the organization secrets; only private repos need repository-level `INFISICAL_IDENTITY_ID` and `INFISICAL_DOMAIN` secrets.
-9. Replace this `README.md` with documentation for your plugin (description, setup, usage, and publishing details).
+9. Run `./gradlew publishPreflight` (or `bash scripts/publish-preflight.sh`) before the first publish push — catches non-executable `gradlew`, missing wrapper jar, and missing `workflow_dispatch`.
+10. Replace this `README.md` with documentation for your plugin (description, setup, usage, and publishing details).
+
+### Publish preflight (agents / CI)
+
+`scripts/publish-preflight.sh` is wired into `./gradlew check`. Run it against any plugin checkout:
+
+```bash
+bash /path/to/EmptyPlugin/scripts/publish-preflight.sh /path/to/OtherPlugin
+```
 
 ## Local build
 

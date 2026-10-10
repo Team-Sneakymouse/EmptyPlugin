@@ -6,7 +6,8 @@ This repo is a **Paper plugin template** (Kotlin, Paper 26.2, Gradle). All codin
 
 | Task | Command |
 |------|---------|
-| Build + unit tests | `./gradlew check` |
+| Build + unit tests | `./gradlew check` (includes `publishPreflight`) |
+| Publish preflight only | `./gradlew publishPreflight` or `bash scripts/publish-preflight.sh` |
 | Unit tests only | `./gradlew test` |
 | Local Paper server | `./gradlew runServer` |
 | Publish (CI) | `./gradlew publishMavenPublicationToSneakyrpRepository` (requires Maven credentials) |

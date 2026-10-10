@@ -82,6 +82,17 @@ tasks {
     test {
         useJUnitPlatform()
     }
+
+    val publishPreflight by registering(Exec::class) {
+        group = "verification"
+        description = "Catch sneakyrp publish footguns (gradlew mode, wrapper jar, workflow_dispatch)."
+        workingDir = rootDir
+        commandLine("bash", "scripts/publish-preflight.sh", rootDir.absolutePath)
+    }
+
+    check {
+        dependsOn(publishPreflight)
+    }
 }
 
 publishing {
