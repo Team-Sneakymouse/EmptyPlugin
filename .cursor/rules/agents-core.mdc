@@ -1,15 +1,8 @@
 ---
-description: Core agent policy — read AGENTS.md and run tests
+description: Core agent policy — read AGENTS.md
 alwaysApply: true
 ---
 
 # Project policy
 
-Read and follow [AGENTS.md](../../AGENTS.md).
-
-Before finishing work that touches `src/main/`:
-
-1. Add or update matching tests under `src/test/`.
-2. Run `./gradlew test` or `./gradlew check` and fix failures.
-
-Use `./gradlew runServer` only for manual smoke tests, not as a substitute for unit tests.
+Follow [AGENTS.md](../../AGENTS.md).
