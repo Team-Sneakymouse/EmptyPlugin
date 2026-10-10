@@ -2,7 +2,7 @@ package com.emptyplugin
 
 import org.bukkit.plugin.java.JavaPlugin
 
-class EmptyPlugin : JavaPlugin() {
+open class EmptyPlugin : JavaPlugin() {
 
     companion object {
         const val IDENTIFIER = "emptyplugin"

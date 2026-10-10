@@ -8,8 +8,10 @@ Clone this repo (or use it as a GitHub template), rename the project, and start 
 
 - Kotlin + Java 25 toolchain, Gradle wrapper (9.3+)
 - `run-paper` for a local Paper `26.2` server (`./gradlew runServer`)
+- JUnit 5 + MockBukkit (`mockbukkit-v26.2`) unit test setup under `src/test/kotlin`
 - Git-derived versions and `maven-publish` to `https://maven.sneakyrp.com/releases`
-- GitHub Actions publish workflow (Infisical OIDC → Maven credentials)
+- GitHub Actions CI (`check`) and publish workflow (Infisical OIDC → Maven credentials)
+- **[AGENTS.md](./AGENTS.md)** — shared instructions for LLM coding agents (Cursor, Claude Code, Codex, etc.)
 
 ## Versioning
 
@@ -77,3 +79,16 @@ and add a `compileOnly` / `implementation` dependency as needed.
 ```bash
 ./gradlew build
 ```
+
+## Testing
+
+```bash
+./gradlew test          # unit tests only
+./gradlew check         # tests + other verification (same gate as CI)
+```
+
+Example tests: `TextUtilityTest` (pure logic), `CommandBaseTest` (permissions), `EmptyPluginTest` (MockBukkit load/enable).
+
+## Agent / LLM instructions
+
+Point your tool’s project instructions at **[AGENTS.md](./AGENTS.md)**. Cursor also loads `.cursor/rules/`; Claude Code reads `CLAUDE.md`; GitHub Copilot can use `.github/copilot-instructions.md`.

@@ -1,0 +1,12 @@
+---
+description: Paper plugin layout and testability (Kotlin)
+globs: src/**/*.kt
+alwaysApply: false
+---
+
+# Paper plugin (Kotlin)
+
+- Put domain logic in `service/` or `util/` without Bukkit imports; keep commands/listeners thin.
+- Prefer injecting dependencies over `EmptyPlugin.instance`.
+- Plugin and command classes used with MockBukkit must be `open`.
+- Mirror test packages under `src/test/kotlin`; copy patterns from `TextUtilityTest`, `CommandBaseTest`, `EmptyPluginTest`.

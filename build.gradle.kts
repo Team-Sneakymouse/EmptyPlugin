@@ -31,9 +31,17 @@ repositories {
     // maven("https://maven.sneakyrp.com/releases")
 }
 
+val paperApi = "26.2.build.+"
+val mockBukkitVersion = "4.117.0"
+
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:26.2.build.+")
+    compileOnly("io.papermc.paper:paper-api:$paperApi")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
+
+    testImplementation("io.papermc.paper:paper-api:$paperApi")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v26.2:$mockBukkitVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     // Example internal dependency (uncomment sneakyrp repo above when needed):
     // compileOnly("io.github.team-sneakymouse:sneakypocketbase-api:VERSION")
 }
@@ -69,6 +77,10 @@ tasks {
 
     runServer {
         minecraftVersion("26.2")
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }
 
