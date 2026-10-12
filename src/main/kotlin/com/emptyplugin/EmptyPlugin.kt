@@ -19,7 +19,7 @@ open class EmptyPlugin : JavaPlugin() {
 
     override fun onEnable() {
         logger.info("EmptyPlugin enabled.")
-        saveDefaultConfig()
+        // saveDefaultConfig()
     }
 
     override fun onDisable() {
