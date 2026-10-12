@@ -106,6 +106,7 @@ publishing {
                     "Standard Paper plugin template for Team-Sneakymouse / Lords of Minecraft."
                 )
                 url.set("https://github.com/Team-Sneakymouse/EmptyPlugin")
+                properties.put("sneakyrp.deployment.type", "paper-plugin")
                 licenses {
                     license {
                         name.set("GNU General Public License v3.0")
