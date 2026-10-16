@@ -35,6 +35,13 @@ Guidelines:
 - Avoid new uses of **`EmptyPlugin.instance`**; prefer constructor parameters (`JavaPlugin`, services) so tests stay simple.
 - Classes loaded by MockBukkit (plugin, commands) must be **`open`** in Kotlin.
 
+## Plugin reload contract (required)
+
+- Keep `/<identifier> reload` working as the plugin evolves. Route startup and the command through `EmptyPlugin.reloadPlugin()`; it currently re-parses `config.yml`.
+- When adding config-derived settings, caches, services, or scheduled tasks, extend that shared path to apply the new configuration to running behavior. Replace or cancel existing resources before recreating them so repeated reloads remain safe.
+- Register commands/listeners once during enable; a config reload must not duplicate registrations or reload the server/plugin classloader. Document settings that require a restart.
+- Add regression tests that change configuration on disk and verify runtime behavior after repeated reloads, including permission denial. Keep the reload command, permission, and README aligned when renaming the template.
+
 ## Testing policy (required)
 
 1. If you change behavior under `src/main/`, **add or update** tests under `src/test/` in the same change.
