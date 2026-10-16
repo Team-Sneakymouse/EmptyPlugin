@@ -13,6 +13,12 @@ Clone this repo (or use it as a GitHub template), rename the project, and start 
 - GitHub Actions CI (`check`) and publish workflow (Infisical OIDC → Maven credentials)
 - **[AGENTS.md](./AGENTS.md)** — shared instructions for LLM coding agents (Cursor, Claude Code, Codex, etc.)
 
+## Plugin reload
+
+Run `/emptyplugin reload` in-game or `emptyplugin reload` from the console to re-read `plugins/EmptyPlugin/config.yml`. The permission is `emptyplugin.command.reload` (default: operators). This reloads configuration only, not plugin code or the server.
+
+Startup and the command share `EmptyPlugin.reloadPlugin()`. As features are added, maintain that method to refresh config-derived runtime state; see the required reload contract in [AGENTS.md](./AGENTS.md).
+
 ## Versioning
 
 Builds **require a git checkout** with at least one commit. The version is:
@@ -68,7 +74,7 @@ and add a `compileOnly` / `implementation` dependency as needed.
 2. `settings.gradle.kts` → `rootProject.name = "YourPlugin"`.
 3. `build.gradle.kts` → update POM name/description/URLs; set `artifactId` (usually lowercase, e.g. `yourplugin`).
 4. Move `com.emptyplugin` → your package (sibling plugins often use `com.yourplugin`).
-5. Update `paper-plugin.yml` (`name`, `main`, `description`, `website`).
+5. Update `paper-plugin.yml` (`name`, `main`, `description`, `website`, and permissions), `EmptyPlugin.IDENTIFIER`, and the reload command docs/tests for the new plugin identity.
 6. Update JAR naming if you keep `archiveFileName` tied to `rootProject.name`.
 7. Point workflow publish task at the same publication name (`maven`) unless you rename it.
 8. Ensure Infisical OIDC allowlists the new repo. Public repos inherit the organization secrets; only private repos need repository-level `INFISICAL_IDENTITY_ID` and `INFISICAL_DOMAIN` secrets.
