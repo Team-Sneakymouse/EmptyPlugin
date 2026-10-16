@@ -1,6 +1,10 @@
 package com.emptyplugin.commands
 
 import com.emptyplugin.EmptyPlugin
+import com.mojang.brigadier.exceptions.CommandSyntaxException
+import org.mockbukkit.mockbukkit.command.CommandSourceStackMock
+import org.mockbukkit.mockbukkit.command.brigadier.PaperCommandsMock
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.mockbukkit.mockbukkit.MockBukkit
 import org.mockbukkit.mockbukkit.ServerMock
 import org.junit.jupiter.api.AfterEach
@@ -22,6 +26,17 @@ class ReloadCommandTest {
     @AfterEach
     fun tearDown() {
         MockBukkit.unmock()
+    }
+
+    @Test
+    fun reloadLiteralHasNativeCompletion() {
+        MockBukkit.load(EmptyPlugin::class.java)
+        server.dispatchCommand(server.consoleSender, "emptyplugin")
+
+        val dispatcher = PaperCommandsMock.INSTANCE.dispatcherInternal
+        val parsed = dispatcher.parse("emptyplugin r", CommandSourceStackMock.from(server.consoleSender))
+        val suggestions = dispatcher.getCompletionSuggestions(parsed).join().list.map { it.text }
+        assertEquals(listOf("reload"), suggestions)
     }
 
     @Test
@@ -51,14 +66,19 @@ class ReloadCommandTest {
     }
 
     @Test
-    fun invalidArgumentsShowUsageWithoutReloading() {
+    fun invalidArgumentsAreRejectedWithoutReloading() {
         val plugin = MockBukkit.load(EmptyPlugin::class.java)
+        server.dispatchCommand(server.consoleSender, "emptyplugin")
         plugin.config.set("test-value", "before")
         File(plugin.dataFolder, "config.yml").writeText("test-value: after\n")
 
         for (command in listOf("emptyplugin", "emptyplugin unknown", "emptyplugin reload extra")) {
-            assertTrue(server.dispatchCommand(server.consoleSender, command))
-            assertEquals("Usage: /emptyplugin reload", server.consoleSender.nextMessage())
+            assertThrows(CommandSyntaxException::class.java) {
+                PaperCommandsMock.INSTANCE.dispatcherInternal.execute(
+                    command,
+                    CommandSourceStackMock.from(server.consoleSender),
+                )
+            }
             assertEquals("before", plugin.config.getString("test-value"))
         }
     }

@@ -1,6 +1,7 @@
 package com.emptyplugin
 
 import com.emptyplugin.commands.ReloadCommand
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import org.bukkit.plugin.java.JavaPlugin
 
 open class EmptyPlugin : JavaPlugin() {
@@ -21,11 +22,13 @@ open class EmptyPlugin : JavaPlugin() {
     override fun onEnable() {
         saveDefaultConfig()
         reloadPlugin()
-        registerCommand(IDENTIFIER, "Reload the plugin configuration", ReloadCommand(this))
+        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { event ->
+            event.registrar().register(ReloadCommand(this).create(), "Reload the plugin configuration")
+        }
         logger.info("EmptyPlugin enabled.")
     }
 
-    /** Shared startup/reload path. Keep config-derived runtime state refreshed here. */
+    /** Shared configuration entry point for startup and reload. */
     fun reloadPlugin() {
         reloadConfig()
     }
