@@ -17,7 +17,7 @@ Clone this repo (or use it as a GitHub template), rename the project, and start 
 
 Run `/emptyplugin reload` in-game or `emptyplugin reload` from the console to re-read `plugins/EmptyPlugin/config.yml`. The permission is `emptyplugin.command.reload` (default: operators). This reloads configuration only, not plugin code or the server.
 
-Startup and the command share `EmptyPlugin.reloadPlugin()`. As features are added, maintain that method to refresh config-derived runtime state; see the required reload contract in [AGENTS.md](./AGENTS.md).
+Startup and the command share `EmptyPlugin.reloadPlugin()` as the entry point for applying configuration.
 
 ## Versioning
 
