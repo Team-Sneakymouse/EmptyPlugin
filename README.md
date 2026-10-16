@@ -17,7 +17,7 @@ Clone this repo (or use it as a GitHub template), rename the project, and start 
 
 Run `/emptyplugin reload` in-game or `emptyplugin reload` from the console to re-read `plugins/EmptyPlugin/config.yml`. The permission is `emptyplugin.command.reload` (default: operators). This reloads configuration only, not plugin code or the server.
 
-Startup and the command share `EmptyPlugin.reloadPlugin()` as the entry point for applying configuration.
+Startup and the command share `EmptyPlugin.reloadPlugin()` as the entry point for applying configuration. The command uses Brigadier to simplify native target selector usage in future commands.
 
 ## Versioning
 
