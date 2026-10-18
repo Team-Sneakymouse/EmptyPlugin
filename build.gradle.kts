@@ -33,7 +33,7 @@ repositories {
 
 val paperApi = "26.2.build.+"
 val mockBukkitVersion = "4.117.0"
-val sneakyUtilsVersion = "2026.10.18-4b5831b0b997"
+val sneakyUtilsVersion = "2026.10.18-657d452bd6f4"
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperApi")
