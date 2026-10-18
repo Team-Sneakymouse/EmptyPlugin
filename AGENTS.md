@@ -3,7 +3,13 @@
 This repo is a **Paper plugin template** (Kotlin, Paper 26.2, Gradle). All coding agents (Cursor, Claude Code, Codex, Antigravity, Hermes, etc.) should follow this file.
 
 <!-- BEGIN TEAM-POLICY MANAGED BOOTSTRAP -->
-This project is enrolled in Team-Sneakymouse development policy. Before implementing, or when authorization or risk is unclear, read `.team-policy/manifest.json` and `.team-policy/policy/core.md` from this project root. Read `.team-policy/policy/scope-and-testing.md` when classifying risk or changing behavior. Read `.team-policy/workflows/development.md` for nontrivial multi-step work. Read `.team-policy/policy/sneakyutils.md` when adding or sharing Paper util/manager code. Report a missing payload or a manifest/payload revision mismatch rather than substituting remembered rules. Load optional skills from `.team-policy/skills/` only when relevant. Follow local build/architecture facts and explicit exceptions below. When host instructions and team policy repeat the same norm, follow the host wording. If they require incompatible actions, surface the conflict before expanding work. Distinguish running checks from implementing tests; a source edit does not automatically require a new test.
+This project is enrolled in Team-Sneakymouse development policy via a sibling checkout (see `.team-policy/pointer.json`).
+
+Resolve the policy root: try each `local_candidates` path in the pointer relative to this project root. If none exist, `git clone` the pointer `remote` into the first candidate using the developer's existing Git credentials. If a checkout exists but is behind `origin/<track_branch>`, `git fetch` and fast-forward that branch when safe; if local edits block the update, report and ask.
+
+Before implementing, or when authorization or risk is unclear, read `<policy-root>/policy/core.md`. Read `<policy-root>/policy/scope-and-testing.md` when classifying risk or changing behavior. Read `<policy-root>/workflows/development.md` for nontrivial multi-step work. Read `<policy-root>/policy/sneakyutils.md` when adding or sharing Paper util/manager code. Load optional skills from `<policy-root>/skills/` only when relevant.
+
+Do not substitute remembered rules, a web mirror, or an unlisted path. Follow local build/architecture facts and explicit exceptions below. When host instructions and team policy repeat the same norm, follow the host wording. If they require incompatible actions, surface the conflict before expanding work. Distinguish running checks from implementing tests; a source edit does not automatically require a new test.
 <!-- END TEAM-POLICY MANAGED BOOTSTRAP -->
 
 ## Project facts
@@ -11,9 +17,9 @@ This project is enrolled in Team-Sneakymouse development policy. Before implemen
 | | |
 |--|--|
 | Project | EmptyPlugin (Paper plugin template) |
-| Shared policy | revision in `.team-policy/manifest.json` |
+| Shared policy | sibling checkout via `.team-policy/pointer.json` → `team-development-policy` |
 | Runtime targets | Paper API 26.2, Java/Kotlin JVM 25 |
-| Shared Paper utils | SneakyUtils `compileOnly` + runtime `depend` (see `.team-policy/policy/sneakyutils.md`) |
+| Shared Paper utils | SneakyUtils `compileOnly` + runtime `depend` (see team policy `sneakyutils.md`) |
 | Deployment | push to `main` triggers publish via `.github/workflows/publish.yml` |
 
 ### Local exceptions
