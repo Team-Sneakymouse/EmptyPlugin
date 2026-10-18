@@ -1,9 +1,14 @@
 package com.emptyplugin.util
 
+import com.sneakyutils.util.TextUtility
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
+/**
+ * Smoke tests against SneakyUtils [TextUtility] (not owned by this template).
+ * Keeps a working JUnit example for pure helpers without shipping a local copy.
+ */
 class TextUtilityTest {
 
     @Test

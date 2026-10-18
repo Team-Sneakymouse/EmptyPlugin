@@ -28,22 +28,23 @@ repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     // Internal Team-Sneakymouse / Lords of Minecraft artifacts:
-    // maven("https://maven.sneakyrp.com/releases")
+    maven("https://maven.sneakyrp.com/releases")
 }
 
 val paperApi = "26.2.build.+"
 val mockBukkitVersion = "4.117.0"
+val sneakyUtilsVersion = "2026.10.18-4b5831b0b997"
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperApi")
+    compileOnly("io.github.team-sneakymouse:sneakyutils:$sneakyUtilsVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
 
     testImplementation("io.papermc.paper:paper-api:$paperApi")
+    testImplementation("io.github.team-sneakymouse:sneakyutils:$sneakyUtilsVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v26.2:$mockBukkitVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    // Example internal dependency (uncomment sneakyrp repo above when needed):
-    // compileOnly("io.github.team-sneakymouse:sneakypocketbase-api:VERSION")
 }
 
 kotlin {

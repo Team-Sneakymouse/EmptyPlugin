@@ -24,9 +24,12 @@ src/main/kotlin/<package>/
   service/             # Rules, calculations, domain logic — no org.bukkit imports
   command/             # Parse args, call services, send messages
   listener/            # Events → services
-  util/                # Pure helpers (see TextUtility)
+  util/                # Plugin-specific pure helpers (do not copy TextUtility here)
 src/test/kotlin/<package>/   # Mirror packages; *Test.kt next to the unit under test
 ```
+
+Shared text helpers (`com.sneakyutils.util.TextUtility`) come from the **SneakyUtils**
+`compileOnly` dependency — keep the `paper-plugin.yml` server dependency on `SneakyUtils`.
 
 Guidelines:
 
@@ -45,7 +48,7 @@ Guidelines:
 
 | Kind of code | Approach |
 |--------------|----------|
-| `util/`, `service/` (no Bukkit) | Plain **JUnit 5** (see `TextUtilityTest`) |
+| `util/`, `service/` (no Bukkit) | Plain **JUnit 5** (see `TextUtilityTest` — uses SneakyUtils) |
 | Permissions, command wiring, enable/disable | **MockBukkit** (`mockbukkit-v26.2`, see `EmptyPluginTest`, `CommandBaseTest`) |
 | Full gameplay / integration | Manual **`runServer`** smoke tests |
 

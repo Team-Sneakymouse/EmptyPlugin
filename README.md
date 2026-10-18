@@ -60,13 +60,12 @@ Credentials are passed to Gradle as `sneakyrpUsername` / `sneakyrpPassword` (`Pa
 
 ## Internal dependencies
 
-`mavenCentral()` and the Paper repo are enabled by default. To depend on other Team-Sneakymouse artifacts, uncomment the sneakyrp repository in `build.gradle.kts`:
+The template enables `https://maven.sneakyrp.com/releases` and depends on **SneakyUtils**
+(`compileOnly` + required `paper-plugin.yml` server dependency, load `BEFORE`) for shared
+helpers such as `com.sneakyutils.util.TextUtility`. Do not vendor a local copy of those
+utilities — bump the `sneakyUtilsVersion` in `build.gradle.kts` when you need a newer build.
 
-```kotlin
-maven("https://maven.sneakyrp.com/releases")
-```
-
-and add a `compileOnly` / `implementation` dependency as needed.
+Add further Team-Sneakymouse artifacts the same way (`compileOnly` / `implementation` as needed).
 
 ## Rename checklist (new plugin from this template)
 
@@ -74,7 +73,7 @@ and add a `compileOnly` / `implementation` dependency as needed.
 2. `settings.gradle.kts` → `rootProject.name = "YourPlugin"`.
 3. `build.gradle.kts` → update POM name/description/URLs; set `artifactId` (usually lowercase, e.g. `yourplugin`).
 4. Move `com.emptyplugin` → your package (sibling plugins often use `com.yourplugin`).
-5. Update `paper-plugin.yml` (`name`, `main`, `description`, `website`, and permissions), `EmptyPlugin.IDENTIFIER`, and the reload command docs/tests for the new plugin identity.
+5. Update `paper-plugin.yml` (`name`, `main`, `description`, `website`, and permissions), `EmptyPlugin.IDENTIFIER`, and the reload command docs/tests for the new plugin identity. Keep the `SneakyUtils` server dependency unless you deliberately remove that shared util usage.
 6. Update JAR naming if you keep `archiveFileName` tied to `rootProject.name`.
 7. Point workflow publish task at the same publication name (`maven`) unless you rename it.
 8. Ensure Infisical OIDC allowlists the new repo. Public repos inherit the organization secrets; only private repos need repository-level `INFISICAL_IDENTITY_ID` and `INFISICAL_DOMAIN` secrets.
@@ -102,7 +101,7 @@ bash /path/to/EmptyPlugin/scripts/publish-preflight.sh /path/to/OtherPlugin
 ./gradlew check         # tests + other verification (same gate as CI)
 ```
 
-Example tests: `TextUtilityTest` (pure logic), `CommandBaseTest` (permissions), `EmptyPluginTest` (MockBukkit load/enable).
+Example tests: `TextUtilityTest` (SneakyUtils `TextUtility` smoke), `CommandBaseTest` (permissions), `EmptyPluginTest` (MockBukkit load/enable).
 
 ## Agent / LLM instructions
 
