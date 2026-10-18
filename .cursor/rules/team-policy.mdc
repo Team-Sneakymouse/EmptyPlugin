@@ -1,0 +1,6 @@
+---
+description: Team development policy — follow AGENTS.md
+alwaysApply: true
+---
+
+Follow [AGENTS.md](../../AGENTS.md). It includes the enrolled team-policy bootstrap, local facts, and the stricter template testing exception. Read `.team-policy/` files as that bootstrap directs.

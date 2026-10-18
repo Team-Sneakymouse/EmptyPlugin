@@ -2,6 +2,24 @@
 
 This repo is a **Paper plugin template** (Kotlin, Paper 26.2, Gradle). All coding agents (Cursor, Claude Code, Codex, Antigravity, Hermes, etc.) should follow this file.
 
+<!-- BEGIN TEAM-POLICY MANAGED BOOTSTRAP -->
+This project is enrolled in Team-Sneakymouse development policy. Before implementing, or when authorization or risk is unclear, read `.team-policy/manifest.json` and `.team-policy/policy/core.md` from this project root. Read `.team-policy/policy/scope-and-testing.md` when classifying risk or changing behavior. Read `.team-policy/workflows/development.md` for nontrivial multi-step work. Read `.team-policy/policy/sneakyutils.md` when adding or sharing Paper util/manager code. Report a missing payload or a manifest/payload revision mismatch rather than substituting remembered rules. Load optional skills from `.team-policy/skills/` only when relevant. Follow local build/architecture facts and explicit exceptions below. When host instructions and team policy repeat the same norm, follow the host wording. If they require incompatible actions, surface the conflict before expanding work. Distinguish running checks from implementing tests; a source edit does not automatically require a new test.
+<!-- END TEAM-POLICY MANAGED BOOTSTRAP -->
+
+## Project facts
+
+| | |
+|--|--|
+| Project | EmptyPlugin (Paper plugin template) |
+| Shared policy | revision in `.team-policy/manifest.json` |
+| Runtime targets | Paper API 26.2, Java/Kotlin JVM 25 |
+| Shared Paper utils | SneakyUtils `compileOnly` + runtime `depend` (see `.team-policy/policy/sneakyutils.md`) |
+| Deployment | push to `main` triggers publish via `.github/workflows/publish.yml` |
+
+### Local exceptions
+
+- **Stricter testing (template):** if you change behavior under `src/main/`, add or update tests under `src/test/` in the same change, and run `./gradlew test` (or `check`) before finishing. Rationale: this repo is the team template; every behavior change should demonstrate the test harness. Approver: pilot enrollment 2026-10-18. This is stricter than shared proportional defaults and wins for this repository.
+
 ## Commands
 
 | Task | Command |
@@ -38,7 +56,7 @@ Guidelines:
 - Avoid new uses of **`EmptyPlugin.instance`**; prefer constructor parameters (`JavaPlugin`, services) so tests stay simple.
 - Classes loaded by MockBukkit (plugin, commands) must be **`open`** in Kotlin.
 
-## Testing policy (required)
+## Testing (local exception — required)
 
 1. If you change behavior under `src/main/`, **add or update** tests under `src/test/` in the same change.
 2. Run **`./gradlew test`** (or `./gradlew check`) and fix failures before finishing the task.
