@@ -33,11 +33,17 @@ repositories {
 
 val paperApi = "26.2.build.+"
 val mockBukkitVersion = "4.117.0"
+/** Keep compileOnly and runServer pluginJars on the same published SneakyUtils. */
 val sneakyUtilsVersion = "2026.10.18-657d452bd6f4"
+
+/** Runtime plugin jar for ./gradlew runServer (resolved from maven.sneakyrp.com into the Gradle cache). */
+val sneakyUtilsPlugin by configurations.creating
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:$paperApi")
     compileOnly("io.github.team-sneakymouse:sneakyutils:$sneakyUtilsVersion")
+    // Plugin jar only — do not stage transitive libs (e.g. kotlin-stdlib) as Paper plugins.
+    sneakyUtilsPlugin("io.github.team-sneakymouse:sneakyutils:$sneakyUtilsVersion") { isTransitive = false }
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
 
     testImplementation("io.papermc.paper:paper-api:$paperApi")
@@ -78,6 +84,23 @@ tasks {
 
     runServer {
         minecraftVersion("26.2")
+        // Resolved from Maven (Gradle cache); Paper still needs a jar on disk under run/plugins.
+        pluginJars.from(sneakyUtilsPlugin)
+        // Drop any hand-copied / stale SneakyUtils jar so only the pinned version from pluginJars is loaded.
+        doFirst {
+            val pluginsDir = runDirectory.get().asFile.resolve("plugins")
+            if (!pluginsDir.isDirectory) return@doFirst
+            pluginsDir.listFiles()
+                ?.filter {
+                    it.isFile &&
+                        it.name.endsWith(".jar", ignoreCase = true) &&
+                        it.name.contains("sneakyutils", ignoreCase = true)
+                }
+                ?.forEach { stale ->
+                    logger.lifecycle("runServer: removing stale {}", stale.name)
+                    stale.delete()
+                }
+        }
     }
 
     test {

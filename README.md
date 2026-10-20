@@ -7,7 +7,7 @@ Clone this repo (or use it as a GitHub template), rename the project, and start 
 ## What’s included
 
 - Kotlin + Java 25 toolchain, Gradle wrapper (9.3+)
-- `run-paper` for a local Paper `26.2` server (`./gradlew runServer`)
+- `run-paper` for a local Paper `26.2` server (`./gradlew runServer` stages the pinned SneakyUtils jar from Maven into `run/plugins`)
 - JUnit 5 + MockBukkit (`mockbukkit-v26.2`) unit test setup under `src/test/kotlin`
 - Git-derived versions and `maven-publish` to `https://maven.sneakyrp.com/releases`
 - GitHub Actions CI (`check`) and publish workflow (Infisical OIDC → Maven credentials)
