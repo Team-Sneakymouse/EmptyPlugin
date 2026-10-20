@@ -94,6 +94,10 @@ bash /path/to/EmptyPlugin/scripts/publish-preflight.sh /path/to/OtherPlugin
 ./gradlew build
 ```
 
+Gradle writes under `~/.cache/EmptyPlugin-gradle-build` so checkouts on NTFS/FUSE (e.g. `/mnt/files`) do not wedge `test-results`. A leftover repo `build/` directory is unused; delete it if present. If `./gradlew check` fails deleting `test-results`, run `./gradlew --stop` and retry.
+
+For local `runServer`, prefer `run/` as a symlink to a native path (e.g. `~/.cache/emptyplugin-run`) — Paper world COW/file locks break on FUSE mounts.
+
 ## Testing
 
 ```bash
