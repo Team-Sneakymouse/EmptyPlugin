@@ -41,6 +41,18 @@ val mockBukkitVersion = "4.117.0"
 /** Keep compileOnly and runServer pluginJars on the same published SneakyUtils. */
 val sneakyUtilsVersion = "2026.10.18-657d452bd6f4"
 
+/**
+ * On Windows, a bare `bash` resolves to WSL's System32\bash.exe before PATH is searched.
+ * Use Git for Windows' bash (located via `git --exec-path`) when it exists.
+ */
+fun bashExecutable(): String {
+    if (!System.getProperty("os.name").startsWith("Windows")) return "bash"
+    val gitExecPath =
+        providers.exec { commandLine("git", "--exec-path") }.standardOutput.asText.get().trim()
+    val gitBash = file(gitExecPath).resolve("../../../bin/bash.exe").normalize()
+    return if (gitBash.isFile) gitBash.absolutePath else "bash"
+}
+
 /** Runtime plugin jar for ./gradlew runServer (resolved from maven.sneakyrp.com into the Gradle cache). */
 val sneakyUtilsPlugin by configurations.creating
 
@@ -116,7 +128,7 @@ tasks {
         group = "verification"
         description = "Catch sneakyrp publish footguns (gradlew mode, wrapper jar, workflow_dispatch)."
         workingDir = rootDir
-        commandLine("bash", "scripts/publish-preflight.sh", rootDir.absolutePath)
+        commandLine(bashExecutable(), "scripts/publish-preflight.sh", rootDir.absolutePath)
     }
 
     check {
