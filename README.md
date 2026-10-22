@@ -82,10 +82,11 @@ required server deps with no matching `compileOnly` jar fail the task.
 8. Ensure Infisical OIDC allowlists the new repo. Public repos inherit the organization secrets; only private repos need repository-level `INFISICAL_IDENTITY_ID` and `INFISICAL_DOMAIN` secrets.
 9. Run `./gradlew publishPreflight` (or `bash scripts/publish-preflight.sh`) before the first publish push — catches non-executable `gradlew`, missing wrapper jar, and missing `workflow_dispatch`.
 10. Replace this `README.md` with documentation for your plugin (description, setup, usage, and publishing details).
+11. In `AGENTS.md`, remove the EmptyPlugin-only local testing exception and any other template-only instructions. Follow the shared policy unless the new repository has a separately approved, accurately scoped exception. After changing `rootProject.name`, `./gradlew check` verifies that the EmptyPlugin-only exception marker is gone.
 
 ### Publish preflight (agents / CI)
 
-`scripts/publish-preflight.sh` is wired into `./gradlew check`. Run it against any plugin checkout:
+`scripts/publish-preflight.sh` is wired into `./gradlew check`. The same check also runs a template-policy preflight that catches the EmptyPlugin-only agent exception if it was copied into a renamed plugin. Run the publish preflight against any plugin checkout:
 
 ```bash
 bash /path/to/EmptyPlugin/scripts/publish-preflight.sh /path/to/OtherPlugin

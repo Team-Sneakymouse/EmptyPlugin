@@ -282,8 +282,24 @@ tasks {
         commandLine(bashExecutable(), "scripts/publish-preflight.sh", rootDir.absolutePath)
     }
 
+    val templatePolicyPreflight by registering {
+        group = "verification"
+        description = "Catch EmptyPlugin-only agent rules copied into a renamed plugin."
+        doLast {
+            if (rootProject.name != "EmptyPlugin") {
+                val instructions = rootProject.file("AGENTS.md")
+                val marker = "<!-- EMPTYPLUGIN-ONLY LOCAL EXCEPTION: remove from repositories created from this template -->"
+                if (instructions.isFile && marker in instructions.readText()) {
+                    throw GradleException(
+                        "AGENTS.md still contains the EmptyPlugin-only exception. Remove the template block; if needed, restate a separately approved exception with this repository's scope."
+                    )
+                }
+            }
+        }
+    }
+
     check {
-        dependsOn(publishPreflight)
+        dependsOn(publishPreflight, templatePolicyPreflight)
     }
 }
 

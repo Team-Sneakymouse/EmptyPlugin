@@ -7,7 +7,7 @@ This project is enrolled in Team-Sneakymouse development policy via a sibling ch
 
 Resolve the policy root: try each `local_candidates` path in the pointer relative to this project root. If none exist, `git clone` the pointer `remote` into the first candidate using the developer's existing Git credentials. If a checkout exists but is behind `origin/<track_branch>`, `git fetch` and fast-forward that branch when safe; if local edits block the update, report and ask.
 
-Before implementing, or when authorization or risk is unclear, read `<policy-root>/policy/core.md`. Read `<policy-root>/policy/scope-and-testing.md` when classifying risk or changing behavior. Read `<policy-root>/workflows/development.md` for nontrivial multi-step work. Read `<policy-root>/policy/sneakyutils.md` when adding or sharing Paper util/manager code. Load optional skills from `<policy-root>/skills/` only when relevant.
+Before implementing, review `<policy-root>/README.md` as the current policy index and load the linked guidance relevant to the task. At minimum, when authorization or risk is unclear, read `<policy-root>/policy/core.md`; read `<policy-root>/policy/scope-and-testing.md` when classifying risk or changing behavior; and read `<policy-root>/workflows/development.md` for nontrivial multi-step work. For substantial Paper features, persistent world state, or changes spanning components, read `<policy-root>/policy/paper-plugin-maintainability.md`. Read `<policy-root>/policy/sneakyutils.md` when adding or sharing Paper util/manager code. Load optional skills from `<policy-root>/skills/` only when relevant.
 
 Do not substitute remembered rules, a web mirror, or an unlisted path. Follow local build/architecture facts and explicit exceptions below. When host instructions and team policy repeat the same norm, follow the host wording. If they require incompatible actions, surface the conflict before expanding work. Distinguish running checks from implementing tests; a source edit does not automatically require a new test.
 <!-- END TEAM-POLICY MANAGED BOOTSTRAP -->
@@ -25,16 +25,18 @@ Do not substitute remembered rules, a web mirror, or an unlisted path. Follow lo
 
 Custom item look, CraftEngine/pack model id, server resource pack, or ItemDisplay place/orient → read `<policy-root>/policy/paper-items.md`.
 
-### Local exceptions
+<!-- EMPTYPLUGIN-ONLY LOCAL EXCEPTION: remove from repositories created from this template -->
+### Template-only local exception — EmptyPlugin only
 
-- **Stricter testing (template):** if you change behavior under `src/main/`, add or update tests under `src/test/` in the same change, and run `./gradlew test` (or `check`) before finishing. Rationale: this repo is the team template; every behavior change should demonstrate the test harness. Approver: pilot enrollment 2026-10-18. This is stricter than shared proportional defaults and wins for this repository.
+- **Stricter testing:** while working on this repository as the EmptyPlugin template, if you change behavior under `src/main/`, add or update tests under `src/test/` in the same change and run `./gradlew test` (or `check`). Rationale: the template should demonstrate its test harness. Approver: pilot enrollment 2026-10-18. This exception applies only to the EmptyPlugin repository. It does not transfer to a plugin created from this template; remove this section when following the rename checklist unless the new repository separately records an approved exception.
 
 ## Commands
 
 | Task | Command |
 |------|---------|
-| Build + unit tests | `./gradlew check` (includes `publishPreflight`) |
+| Build + unit tests | `./gradlew check` (includes both preflight checks) |
 | Publish preflight only | `./gradlew publishPreflight` or `bash scripts/publish-preflight.sh` |
+| Template instruction preflight | `./gradlew templatePolicyPreflight` (also included in `check`) |
 | Unit tests only | `./gradlew test` |
 | Local Paper server | `./gradlew runServer` (stages `paper-plugin.yml` server deps from matching `compileOnly` jars) |
 | Preview staged deps | `./gradlew resolveRunServerPlugins` |
@@ -85,7 +87,7 @@ MockBukkit lifecycle in every MockBukkit test class:
 - `@BeforeEach`: `MockBukkit.mock()`
 - `@AfterEach`: `MockBukkit.unmock()`
 
-Skipped tests from unimplemented MockBukkit APIs are acceptable; failing tests are not.
+Failing tests are not acceptable. A skipped test does not demonstrate the behavior it skips. If MockBukkit lacks an API needed by the template, use another suitable check and report the evidence gap.
 
 ## Code style
 
