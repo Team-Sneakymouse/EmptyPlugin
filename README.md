@@ -7,7 +7,7 @@ Clone this repo (or use it as a GitHub template), rename the project, and start 
 ## What’s included
 
 - Kotlin + Java 25 toolchain, Gradle wrapper (9.3+)
-- `run-paper` for a local Paper `26.2` server (`./gradlew runServer` stages the pinned SneakyUtils jar from Maven into `run/plugins`)
+- `run-paper` for a local Paper `26.2` server (`./gradlew runServer` stages jars for every `paper-plugin.yml` server dependency by matching `compileOnly` plugin jars)
 - JUnit 5 + MockBukkit (`mockbukkit-v26.2`) unit test setup under `src/test/kotlin`
 - Git-derived versions and `maven-publish` to `https://maven.sneakyrp.com/releases`
 - GitHub Actions CI (`check`) and publish workflow (Infisical OIDC → Maven credentials)
@@ -65,7 +65,10 @@ The template enables `https://maven.sneakyrp.com/releases` and depends on **Snea
 helpers such as `com.sneakyutils.util.TextUtility`. Do not vendor a local copy of those
 utilities — bump the `sneakyUtilsVersion` in `build.gradle.kts` when you need a newer build.
 
-Add further Team-Sneakymouse artifacts the same way (`compileOnly` / `implementation` as needed).
+Add further plugin dependencies the same way: `compileOnly("group:artifact:version")` plus a
+`dependencies.server.<PluginName>` entry in `paper-plugin.yml`. `./gradlew runServer` stages
+matching jars automatically (by reading each jar’s `paper-plugin.yml` / `plugin.yml` `name:`);
+required server deps with no matching `compileOnly` jar fail the task.
 
 ## Rename checklist (new plugin from this template)
 

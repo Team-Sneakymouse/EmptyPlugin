@@ -36,7 +36,8 @@ Custom item look, CraftEngine/pack model id, server resource pack, or ItemDispla
 | Build + unit tests | `./gradlew check` (includes `publishPreflight`) |
 | Publish preflight only | `./gradlew publishPreflight` or `bash scripts/publish-preflight.sh` |
 | Unit tests only | `./gradlew test` |
-| Local Paper server | `./gradlew runServer` |
+| Local Paper server | `./gradlew runServer` (stages `paper-plugin.yml` server deps from matching `compileOnly` jars) |
+| Preview staged deps | `./gradlew resolveRunServerPlugins` |
 | Publish (CI) | `./gradlew publishMavenPublicationToSneakyrpRepository` (requires Maven credentials) |
 
 Builds require a **git checkout** with at least one commit (version is derived from `HEAD`).
