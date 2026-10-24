@@ -10,7 +10,7 @@ Clone this repo (or use it as a GitHub template), rename the project, and start 
 - `run-paper` for a local Paper `26.2` server (`./gradlew runServer` stages jars for every `paper-plugin.yml` server dependency by matching `compileOnly` plugin jars)
 - JUnit 5 + MockBukkit (`mockbukkit-v26.2`) unit test setup under `src/test/kotlin`
 - Git-derived versions and `maven-publish` to `https://maven.sneakyrp.com/releases`
-- GitHub Actions CI (`check`) and publish workflow (Infisical OIDC → Maven credentials)
+- GitHub Actions CI and publish workflows that call the shared [`Team-Sneakymouse/ci`](https://github.com/Team-Sneakymouse/ci) Gradle workflow (Infisical OIDC → Maven credentials)
 - **[AGENTS.md](./AGENTS.md)** — shared instructions for LLM coding agents (Cursor, Claude Code, Codex, etc.)
 
 ## Plugin reload
@@ -39,11 +39,16 @@ io.github.team-sneakymouse:emptyplugin:<version>
 
 ## Publish flow
 
-On every push to `main`, `.github/workflows/publish.yml`:
+On every push to `main`, `.github/workflows/publish.yml` calls the shared
+`Team-Sneakymouse/ci/.github/workflows/gradle-publish.yml@main` workflow, which:
 
 1. Builds with Java 25
 2. Fetches `MAVEN_USERNAME` / `MAVEN_PASSWORD` from Infisical via OIDC
 3. Runs `./gradlew publishMavenPublicationToSneakyrpRepository`
+
+`.github/workflows/ci.yml` calls the same workflow with `publish: false` for pull requests and pushes to `main`.
+Both run on the organization's self-hosted `alphaarcadeus` runner. The steps live in the shared repository, so
+changes to them are made there; see its README for the inputs (`publish-task`, `project-directory`, `runs-on`).
 
 ### GitHub secrets (repository-level setup only for private repos)
 
@@ -78,7 +83,7 @@ required server deps with no matching `compileOnly` jar fail the task.
 4. Move `com.emptyplugin` → your package (sibling plugins often use `com.yourplugin`).
 5. Update `paper-plugin.yml` (`name`, `main`, `description`, `website`, and permissions), `EmptyPlugin.IDENTIFIER`, and the reload command docs/tests for the new plugin identity. Keep the `SneakyUtils` server dependency unless you deliberately remove that shared util usage.
 6. Update JAR naming if you keep `archiveFileName` tied to `rootProject.name`.
-7. Point workflow publish task at the same publication name (`maven`) unless you rename it.
+7. Keep the publication named `maven`, or pass `publish-task: <task>` under `with:` in `publish.yml` (the shared workflow defaults to `publishMavenPublicationToSneakyrpRepository`).
 8. Ensure Infisical OIDC allowlists the new repo. Public repos inherit the organization secrets; only private repos need repository-level `INFISICAL_IDENTITY_ID` and `INFISICAL_DOMAIN` secrets.
 9. Run `./gradlew publishPreflight` (or `bash scripts/publish-preflight.sh`) before the first publish push — catches non-executable `gradlew`, missing wrapper jar, and missing `workflow_dispatch`.
 10. Replace this `README.md` with documentation for your plugin (description, setup, usage, and publishing details).
