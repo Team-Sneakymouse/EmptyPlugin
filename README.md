@@ -46,6 +46,8 @@ On every push to `main`, `.github/workflows/publish.yml` calls the shared
 2. Fetches `MAVEN_USERNAME` / `MAVEN_PASSWORD` from Infisical via OIDC
 3. Runs `./gradlew publishMavenPublicationToSneakyrpRepository`
 
+Until `rootProject.name` is renamed, the publish task refuses to run outside `Team-Sneakymouse/EmptyPlugin`, so the first push of a new repository fails instead of deploying a jar named `EmptyPlugin`. Complete the rename checklist below and push it to `main`; that push publishes the renamed plugin.
+
 `.github/workflows/ci.yml` calls the same workflow with `publish: false` for pull requests and pushes to `main`.
 Both run on the organization's self-hosted `alphaarcadeus` runner. The steps live in the shared repository, so
 changes to them are made there; see its README for the inputs (`publish-task`, `project-directory`, `runs-on`).

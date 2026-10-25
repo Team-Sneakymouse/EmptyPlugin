@@ -349,4 +349,15 @@ publishing {
 
 tasks.withType<PublishToMavenRepository>().configureEach {
     dependsOn(tasks.check)
+    // A repository created from this template publishes (and deploys) a jar named EmptyPlugin on its
+    // first push to main. Refuse until the rename checklist has changed rootProject.name.
+    doFirst {
+        val templateRepository = "Team-Sneakymouse/EmptyPlugin"
+        if (rootProject.name == "EmptyPlugin" && System.getenv("GITHUB_REPOSITORY") != templateRepository) {
+            throw GradleException(
+                "Refusing to publish: rootProject.name is still \"EmptyPlugin\" outside $templateRepository. " +
+                    "Finish the README rename checklist (settings.gradle.kts, artifactId, paper-plugin.yml) first.",
+            )
+        }
+    }
 }
