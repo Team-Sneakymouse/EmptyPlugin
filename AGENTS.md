@@ -17,7 +17,6 @@ Do not substitute remembered rules, a web mirror, or an unlisted path. Follow lo
 | | |
 |--|--|
 | Project | EmptyPlugin (Paper plugin template) |
-| Shared policy | sibling checkout via `.team-policy/pointer.json` → `team-development-policy` |
 | Runtime targets | Paper API 26.2, Java/Kotlin JVM 25 |
 | Shared Paper utils | SneakyUtils `compileOnly` + runtime `depend` (see team policy `sneakyutils.md`) |
 | Deployment | push to `main` triggers publish via `.github/workflows/publish.yml` |
@@ -67,12 +66,11 @@ Guidelines:
 - **Commands and listeners** are thin adapters over services.
 - Avoid new uses of **`EmptyPlugin.instance`**; prefer constructor parameters (`JavaPlugin`, services) so tests stay simple.
 - Classes loaded by MockBukkit (plugin, commands) must be **`open`** in Kotlin.
+- `CommandBase` sets permission to `{identifier}.command.{name}` using `EmptyPlugin.IDENTIFIER`.
 
-## Testing (local exception — required)
+## Testing
 
-1. If you change behavior under `src/main/`, **add or update** tests under `src/test/` in the same change.
-2. Run **`./gradlew test`** (or `./gradlew check`) and fix failures before finishing the task.
-3. Do not rely on `./gradlew runServer` as the only verification for logic changes.
+Run `./gradlew check` before finishing. Do not rely on `./gradlew runServer` as the only verification for logic changes.
 
 ### What to test how
 
@@ -98,20 +96,3 @@ Failing tests are not acceptable. A skipped test does not demonstrate the behavi
 - **Docs:** when commands, permissions or config keys change, update README, AGENTS.md and the knowledge `catalog.yml` in the same commit.
 - **Tests:** when touching scoring, parsing, pricing or timing logic, extract it into pure Kotlin and add a unit test.
 - **Secrets:** read credentials from config or Infisical. If you find a hardcoded secret, flag it for rotation and never copy it anywhere, including reports and logs.
-
-## Code style
-
-- Match existing Kotlin style and package layout.
-- Keep diffs minimal; do not refactor unrelated code.
-- `CommandBase` sets permission to `{identifier}.command.{name}` using `EmptyPlugin.IDENTIFIER`.
-
-## Definition of done
-
-- [ ] Behavior covered or updated in `src/test/`
-- [ ] `./gradlew check` passes locally
-- [ ] No secrets committed (Maven credentials via env / Infisical only)
-- [ ] `paper-plugin.yml` and POM metadata updated if plugin identity changed
-
-## Human docs
-
-- `README.md` — template usage, publish flow, rename checklist
