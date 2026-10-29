@@ -93,8 +93,8 @@ Team-wide Paper rules (threads, reload, public hooks, stable ids, docs) live in 
 
 - **Keep file, DB and HTTP work off the main thread.** Do disk, database, Pocketbase and HTTP calls in async tasks; return to the main thread only to touch Bukkit state. Never block inside an event handler.
 - **Make reload paths complete.** When you add config fields, caches, tasks or listeners, clear and rebuild them in the reload path too. Cancel old scheduled tasks before starting new ones.
-- **Treat MagicSpells and console-command hooks as a public API.** Spell names, variables and dispatched commands are called from MagicSpells-Data and other plugins. Search MagicSpells-Data (branch `dev`) and the knowledge base `HOOKS.md` before renaming them or changing their arguments.
+- **Treat MagicSpells and console-command hooks as a public API.** Spell names, variables and dispatched commands are called from MagicSpells-Data and other plugins. Search MagicSpells-Data (branch `dev`) and, if you have it, the private `Team-Sneakymouse/lom-knowledge` repo (`plugins/HOOKS.md`) before renaming them or changing their arguments.
 - **Don't rename `item_model` ids or PDC keys.** `lom:` ids map to craftengine-resources assets, and PDC keys live on items and entities already in the world. Add a migration or keep the old key.
-- **Update docs in the same commit.** When commands, permissions or config keys change, update README, AGENTS.md and the knowledge `catalog.yml` entry with it.
+- **Update docs in the same commit.** When commands, permissions or config keys change, update README and AGENTS.md with it. If you have the private `Team-Sneakymouse/lom-knowledge` repo, also update the plugin's entry in its `plugins/catalog.yml`; otherwise skip that.
 - **Test pure logic you touch.** Pull scoring, parsing, pricing and timing logic into pure Kotlin and cover it with a unit test.
 - **Never commit secrets.** Read credentials from config or Infisical. If you find a hardcoded secret, flag it for rotation and don't copy it anywhere, including reports and logs.
