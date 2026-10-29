@@ -89,6 +89,16 @@ MockBukkit lifecycle in every MockBukkit test class:
 
 Failing tests are not acceptable. A skipped test does not demonstrate the behavior it skips. If MockBukkit lacks an API needed by the template, use another suitable check and report the evidence gap.
 
+## Server conventions
+
+- **Main thread:** do disk, database, Pocketbase and HTTP calls in async tasks; return to the main thread only to touch Bukkit state. No blocking calls in event handlers.
+- **Reload:** when adding config fields, caches, tasks or listeners, clear and rebuild them in the reload path. Cancel old scheduled tasks before starting new ones.
+- **Public hooks:** MagicSpells spell names, variables and dispatched console commands are an API used by MagicSpells-Data (branch `dev`) and other plugins. Search those callers before renaming or changing arguments.
+- **Stable ids:** don't rename `lom:` `item_model` ids or PDC keys; existing items and entities depend on them. Add a migration or keep the old key.
+- **Docs:** when commands, permissions or config keys change, update README, AGENTS.md and the knowledge `catalog.yml` in the same commit.
+- **Tests:** when touching scoring, parsing, pricing or timing logic, extract it into pure Kotlin and add a unit test.
+- **Secrets:** read credentials from config or Infisical. If you find a hardcoded secret, flag it for rotation and never copy it anywhere, including reports and logs.
+
 ## Code style
 
 - Match existing Kotlin style and package layout.
