@@ -27,7 +27,8 @@ Custom item look, CraftEngine/pack model id, server resource pack, or ItemDispla
 <!-- EMPTYPLUGIN-ONLY LOCAL EXCEPTION: remove from repositories created from this template -->
 ### Template-only local exception — EmptyPlugin only
 
-- **Stricter testing:** while working on this repository as the EmptyPlugin template, if you change behavior under `src/main/`, add or update tests under `src/test/` in the same change and run `./gradlew test` (or `check`). Rationale: the template should demonstrate its test harness. Approver: pilot enrollment 2026-10-18. This exception applies only to the EmptyPlugin repository. It does not transfer to a plugin created from this template; remove this section when following the rename checklist unless the new repository separately records an approved exception.
+- **Stricter testing:** while working on this repository as the EmptyPlugin template, if you change behavior under `src/main/`, add or update tests under `src/test/` in the same change and run `./gradlew test` (or `check`). Rationale: the template should demonstrate its test harness. Approver: pilot enrollment 2026-10-18. This exception applies only to the EmptyPlugin repository. It does not transfer to a plugin created from this template; `scripts/rename-template.sh` removes every block between these markers, unless the new repository separately records an approved exception.
+<!-- END EMPTYPLUGIN-ONLY LOCAL EXCEPTION -->
 
 ## Commands
 
@@ -35,13 +36,17 @@ Custom item look, CraftEngine/pack model id, server resource pack, or ItemDispla
 |------|---------|
 | Build + unit tests | `./gradlew check` (includes both preflight checks) |
 | Publish preflight only | `./gradlew publishPreflight` or `bash scripts/publish-preflight.sh` |
-| Template instruction preflight | `./gradlew templatePolicyPreflight` (also included in `check`) |
+| Agent-instruction preflight | `./gradlew templatePolicyPreflight` (also included in `check`) |
 | Unit tests only | `./gradlew test` |
 | Local Paper server | `./gradlew runServer` (stages `paper-plugin.yml` server deps from matching `compileOnly` jars) |
 | Preview staged deps | `./gradlew resolveRunServerPlugins` |
 | Publish (CI) | `./gradlew publishMavenPublicationToSneakyrpRepository` (requires Maven credentials) |
 
 Builds require a **git checkout** with at least one commit (version is derived from `HEAD`).
+
+<!-- EMPTYPLUGIN-ONLY LOCAL EXCEPTION: remove from repositories created from this template -->
+Template only: `bash scripts/rename-template.sh <PluginName>` turns this checkout into a new plugin, and `./gradlew templateRenameSmoke` (part of `check` here) tests that script on a scratch copy. Template-only Gradle logic lives in `gradle/template.gradle.kts`, which the script deletes.
+<!-- END EMPTYPLUGIN-ONLY LOCAL EXCEPTION -->
 
 ## Architecture (keep plugins testable)
 
@@ -85,6 +90,6 @@ MockBukkit lifecycle in every MockBukkit test class:
 - `@BeforeEach`: `MockBukkit.mock()`
 - `@AfterEach`: `MockBukkit.unmock()`
 
-Failing tests are not acceptable. A skipped test does not demonstrate the behavior it skips. If MockBukkit lacks an API needed by the template, use another suitable check and report the evidence gap.
+Failing tests are not acceptable. A skipped test does not demonstrate the behavior it skips. If MockBukkit lacks a needed API, use another suitable check and report the evidence gap.
 
 Team-wide Paper rules (threads, reload, public hooks, stable ids, docs) live in `<policy-root>/policy/paper-conventions.md`.

@@ -2,7 +2,7 @@
 
 Standard **Paper** plugin template for Team-Sneakymouse / Lords of Minecraft.
 
-Clone this repo (or use it as a GitHub template), rename the project, and start implementing.
+Clone this repo (or use it as a GitHub template), run `bash scripts/rename-template.sh <PluginName>` (see [Rename checklist](#rename-checklist-new-plugin-from-this-template)), and start implementing.
 
 ## What’s included
 
@@ -11,6 +11,7 @@ Clone this repo (or use it as a GitHub template), rename the project, and start 
 - JUnit 5 + MockBukkit (`mockbukkit-v26.2`) unit test setup under `src/test/kotlin`
 - Git-derived versions and `maven-publish` to `https://maven.sneakyrp.com/releases`
 - GitHub Actions CI and publish workflows that call the shared [`Team-Sneakymouse/ci`](https://github.com/Team-Sneakymouse/ci) Gradle workflow (Infisical OIDC → Maven credentials)
+- `scripts/rename-template.sh` — one-step rename of the template into a new plugin
 - **[AGENTS.md](./AGENTS.md)** — shared instructions for LLM coding agents (Cursor, Claude Code, Codex, etc.)
 
 ## Plugin reload
@@ -46,9 +47,9 @@ On every push to `main`, `.github/workflows/publish.yml` calls the shared
 2. Fetches `MAVEN_USERNAME` / `MAVEN_PASSWORD` from Infisical via OIDC
 3. Runs `./gradlew publishMavenPublicationToSneakyrpRepository`
 
-Until `rootProject.name` is renamed, the publish task refuses to run outside `Team-Sneakymouse/EmptyPlugin`, so the first push of a new repository fails instead of deploying a jar named `EmptyPlugin`. Complete the rename checklist below and push it to `main`; that push publishes the renamed plugin.
+While `gradle/template.gradle.kts` exists, the publish task refuses to run outside `Team-Sneakymouse/EmptyPlugin`, so the first push of a new repository fails instead of deploying a jar named `EmptyPlugin`. The rename script deletes that file; push the renamed result to `main` to publish the new plugin.
 
-`.github/workflows/ci.yml` calls the same workflow with `publish: false` for pull requests and pushes to `main`.
+`.github/workflows/ci.yml` calls the same workflow with `publish: false` for pull requests (pushes to `main` are already built by the publish workflow).
 Both run on the organization's self-hosted `alphaarcadeus` runner. The steps live in the shared repository, so
 changes to them are made there; see its README for the inputs (`publish-task`, `project-directory`, `runs-on`).
 
@@ -79,21 +80,40 @@ required server deps with no matching `compileOnly` jar fail the task.
 
 ## Rename checklist (new plugin from this template)
 
-1. Rename the GitHub repo / local folder.
-2. `settings.gradle.kts` → `rootProject.name = "YourPlugin"`.
-3. `build.gradle.kts` → update POM name/description/URLs; set `artifactId` (usually lowercase, e.g. `yourplugin`).
-4. Move `com.emptyplugin` → your package (sibling plugins often use `com.yourplugin`).
-5. Update `paper-plugin.yml` (`name`, `main`, `description`, `website`, and permissions), `EmptyPlugin.IDENTIFIER`, and the reload command docs/tests for the new plugin identity. Keep the `SneakyUtils` server dependency unless you deliberately remove that shared util usage.
-6. Update JAR naming if you keep `archiveFileName` tied to `rootProject.name`.
-7. Keep the publication named `maven`, or pass `publish-task: <task>` under `with:` in `publish.yml` (the shared workflow defaults to `publishMavenPublicationToSneakyrpRepository`).
-8. Ensure Infisical OIDC allowlists the new repo. Public repos inherit the organization secrets; only private repos need repository-level `INFISICAL_IDENTITY_ID` and `INFISICAL_DOMAIN` secrets.
-9. Run `./gradlew publishPreflight` (or `bash scripts/publish-preflight.sh`) before the first publish push — catches non-executable `gradlew`, missing wrapper jar, and missing `workflow_dispatch`.
-10. Replace this `README.md` with documentation for your plugin (description, setup, usage, and publishing details).
-11. In `AGENTS.md`, remove the EmptyPlugin-only local testing exception and any other template-only instructions. Follow the shared policy unless the new repository has a separately approved, accurately scoped exception. After changing `rootProject.name`, `./gradlew check` verifies that the EmptyPlugin-only exception marker is gone.
+Run the rename script from a clean checkout, then review and commit the staged result:
+
+```bash
+bash scripts/rename-template.sh LootTables            # package com.loottables, command /loottables
+bash scripts/rename-template.sh LootTables loot       # pick a different lowercase id
+git diff --cached
+./gradlew check
+```
+
+The script renames the Gradle project, Maven `artifactId`, POM and `paper-plugin.yml` metadata, the `com.emptyplugin`
+package (main and test, via `git mv`), the main class, `IDENTIFIER`, the command, permissions and tests. It also removes
+the template-only `AGENTS.md` rules (every block between the `EMPTYPLUGIN-ONLY LOCAL EXCEPTION` markers), replaces this
+README with a short stub, and deletes `gradle/template.gradle.kts` (publish guard and self-test) and itself.
+
+Still by hand:
+
+1. Rename the GitHub repo / local folder. The script assumes the repository is `Team-Sneakymouse/<PluginName>`; fix the URLs in `build.gradle.kts` and `paper-plugin.yml` if not.
+2. Write the real plugin description in `README.md`, `build.gradle.kts` and `paper-plugin.yml`.
+3. Ensure Infisical OIDC allowlists the new repo. Public repos inherit the organization secrets; only private repos need repository-level `INFISICAL_IDENTITY_ID` and `INFISICAL_DOMAIN` secrets.
+4. Keep the publication named `maven`, or pass `publish-task: <task>` under `with:` in `publish.yml` (the shared workflow defaults to `publishMavenPublicationToSneakyrpRepository`).
+5. Keep the `SneakyUtils` server dependency unless you deliberately remove that shared util usage.
+
+Template-only rules stay out of the new repository: follow the shared policy unless it records a separately approved, accurately scoped exception. `./gradlew templatePolicyPreflight` (part of `check`) fails if a template-only block reappears in `AGENTS.md`.
+
+### Changing the template
+
+Text tied to the template identity must stay renameable: use `EmptyPlugin` / `emptyplugin` only where the plugin name
+belongs, wrap template-only agent rules in the `EMPTYPLUGIN-ONLY LOCAL EXCEPTION` begin/end markers, and put template-only
+Gradle logic in `gradle/template.gradle.kts`. `./gradlew check` runs `templateRenameSmoke`, which renames a scratch copy
+and fails if template text is left behind.
 
 ### Publish preflight (agents / CI)
 
-`scripts/publish-preflight.sh` is wired into `./gradlew check`. The same check also runs a template-policy preflight that catches the EmptyPlugin-only agent exception if it was copied into a renamed plugin. Run the publish preflight against any plugin checkout:
+`scripts/publish-preflight.sh` is wired into `./gradlew check`. The same check also runs `templatePolicyPreflight`, which catches template-only agent rules copied into a renamed plugin. Run the publish preflight against any plugin checkout:
 
 ```bash
 bash /path/to/EmptyPlugin/scripts/publish-preflight.sh /path/to/OtherPlugin

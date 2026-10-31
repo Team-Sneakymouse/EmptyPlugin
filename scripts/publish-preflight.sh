@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Publish footgun checks for Team-Sneakymouse Paper plugins (EmptyPlugin template).
+# Publish footgun checks for Team-Sneakymouse Paper plugins.
 # Usage: scripts/publish-preflight.sh [plugin-root]
 # Exit 0 when clean; non-zero lists every failure.
 set -euo pipefail

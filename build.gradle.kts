@@ -41,6 +41,8 @@ val paperApi = "26.2.build.+"
 val mockBukkitVersion = "4.117.0"
 /** Pinned SneakyUtils for compileOnly / tests; runServer stages it via paper-plugin.yml matching. */
 val sneakyUtilsVersion = "2026.10.18-657d452bd6f4"
+/** Present only in the template repository; see the end of this file. */
+val templateScript = file("gradle/template.gradle.kts")
 
 /**
  * On Windows, a bare `bash` resolves to WSL's System32\bash.exe before PATH is searched.
@@ -284,16 +286,15 @@ tasks {
 
     val templatePolicyPreflight by registering {
         group = "verification"
-        description = "Catch EmptyPlugin-only agent rules copied into a renamed plugin."
+        description = "Catch template-only agent rules copied into a plugin created from the template."
+        val isTemplate = templateScript.isFile
+        val instructions = rootProject.file("AGENTS.md")
         doLast {
-            if (rootProject.name != "EmptyPlugin") {
-                val instructions = rootProject.file("AGENTS.md")
-                val marker = "<!-- EMPTYPLUGIN-ONLY LOCAL EXCEPTION: remove from repositories created from this template -->"
-                if (instructions.isFile && marker in instructions.readText()) {
-                    throw GradleException(
-                        "AGENTS.md still contains the EmptyPlugin-only exception. Remove the template block; if needed, restate a separately approved exception with this repository's scope."
-                    )
-                }
+            val marker = "<!-- EMPTYPLUGIN-ONLY LOCAL EXCEPTION"
+            if (!isTemplate && instructions.isFile && marker in instructions.readText()) {
+                throw GradleException(
+                    "AGENTS.md still contains a template-only exception block. Remove it; if needed, restate a separately approved exception with this repository's scope."
+                )
             }
         }
     }
@@ -349,15 +350,8 @@ publishing {
 
 tasks.withType<PublishToMavenRepository>().configureEach {
     dependsOn(tasks.check)
-    // A repository created from this template publishes (and deploys) a jar named EmptyPlugin on its
-    // first push to main. Refuse until the rename checklist has changed rootProject.name.
-    doFirst {
-        val templateRepository = "Team-Sneakymouse/EmptyPlugin"
-        if (rootProject.name == "EmptyPlugin" && System.getenv("GITHUB_REPOSITORY") != templateRepository) {
-            throw GradleException(
-                "Refusing to publish: rootProject.name is still \"EmptyPlugin\" outside $templateRepository. " +
-                    "Finish the README rename checklist (settings.gradle.kts, artifactId, paper-plugin.yml) first.",
-            )
-        }
-    }
 }
+
+// Template-only guards and checks. scripts/rename-template.sh deletes this file, so a renamed
+// plugin carries no template logic.
+if (templateScript.isFile) apply(from = templateScript)
