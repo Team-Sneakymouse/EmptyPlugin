@@ -9,9 +9,11 @@
 # [plugin-id]   lowercase id for the package (com.<id>), command, permissions and Maven artifactId.
 #               Defaults to <PluginName> in lowercase.
 #
-# The GitHub URLs become Team-Sneakymouse/<PluginName>; edit them if the repository is named differently.
+# The GitHub URLs and the publish.yml repository check use the origin remote's GitHub repository,
+# or Team-Sneakymouse/<PluginName> if origin is missing or still points at the template.
 set -euo pipefail
 
+TEMPLATE_OWNER="Team-Sneakymouse"
 TEMPLATE_NAME="EmptyPlugin"
 TEMPLATE_ID="emptyplugin"
 TEMPLATE_DESCRIPTION="Standard Paper plugin template for Team-Sneakymouse / Lords of Minecraft."
@@ -96,19 +98,49 @@ rename() {
     NAME="$name" ID="$id" perl -pi -e "s/\Q$TEMPLATE_NAME\E/\$ENV{NAME}/g; s/\Q$TEMPLATE_ID\E/\$ENV{ID}/g" "${files[@]}"
   fi
 
+  # 6. Step 5 made the GitHub URLs and the publish.yml check Team-Sneakymouse/<name>; use the real repository.
+  local repo
+  repo="$(github_repo "$name")"
+  if [[ "$repo" != "$TEMPLATE_OWNER/$name" ]]; then
+    files=()
+    while IFS= read -r -d '' file; do files+=("$file"); done < <(
+      git ls-files -z | xargs -0 grep -lIF --null -e "$TEMPLATE_OWNER/$name" || true
+    )
+    if ((${#files[@]})); then
+      FROM="$TEMPLATE_OWNER/$name" TO="$repo" perl -pi -e 's/\Q$ENV{FROM}\E/$ENV{TO}/g' "${files[@]}"
+    fi
+  fi
+
   rm -f "$SELF"
   git add -A
 
   cat <<EOF
 Renamed $TEMPLATE_NAME -> $name (package com.$id, command /$id, artifact io.github.team-sneakymouse:$id).
+GitHub repository: $repo (publish.yml only publishes from there; build.gradle.kts and paper-plugin.yml link to it).
 All changes are staged; review them with: git diff --cached
 
 Still to do by hand:
-  1. Rename the GitHub repository to Team-Sneakymouse/$name (or fix the URLs in build.gradle.kts and paper-plugin.yml).
-  2. Write the plugin description in README.md, build.gradle.kts and paper-plugin.yml.
-  3. Make sure Infisical OIDC allowlists the repository (private repos also need the INFISICAL_* secrets).
-  4. Run ./gradlew check, then commit. Pushing to main publishes the plugin.
+  1. Write the plugin description in README.md, build.gradle.kts and paper-plugin.yml.
+  2. Make sure Infisical OIDC allowlists the repository (private repos also need the INFISICAL_* secrets).
+  3. Run ./gradlew check, then commit. Pushing to main publishes the plugin.
 EOF
+}
+
+# owner/repo of the GitHub origin remote; Team-Sneakymouse/<name> if there is none or it is still the template.
+github_repo() {
+  local name="$1" url repo
+  url="$(git remote get-url origin 2>/dev/null || true)"
+  url="${url%/}"
+  url="${url%.git}"
+  if [[ "$url" =~ github\.com[:/]([^/]+/[^/]+)$ ]]; then
+    repo="${BASH_REMATCH[1]}"
+    # GitHub repository names are case-insensitive.
+    if [[ "${repo,,}" != "${TEMPLATE_OWNER,,}/${TEMPLATE_NAME,,}" ]]; then
+      printf '%s\n' "$repo"
+      return
+    fi
+  fi
+  printf '%s\n' "$TEMPLATE_OWNER/$name"
 }
 
 write_readme() {
@@ -173,9 +205,28 @@ self_test() {
   expect_failure SmokeTestPlugin
   rm "$SCRATCH/untracked-file"
 
+  # A repository named differently from the plugin; the URLs and publish check must follow origin.
+  local repo="Smoke-Owner/smoke-test-repo"
+  git -C "$SCRATCH" remote add origin "https://github.com/$repo.git"
   bash "$script" SmokeTestPlugin >/dev/null
 
   cd "$SCRATCH"
+  grep -qF "if: github.repository == '$repo'" .github/workflows/publish.yml ||
+    die "self-test: publish.yml does not check $repo"
+  grep -qF "website: https://github.com/$repo" src/main/resources/paper-plugin.yml ||
+    die "self-test: paper-plugin.yml does not link $repo"
+  [[ "$(grep -cF "github.com/$repo" build.gradle.kts)" == 3 ]] || die "self-test: build.gradle.kts does not link $repo"
+  ! git grep -q -e "$TEMPLATE_OWNER/SmokeTestPlugin" || die "self-test: Team-Sneakymouse/SmokeTestPlugin left after rename"
+  [[ "$(github_repo X)" == "$repo" ]] || die "self-test: github_repo misread origin"
+  local url
+  for url in git@github.com:Team-Sneakymouse/EmptyPlugin.git https://github.com/team-sneakymouse/emptyplugin; do
+    git remote set-url origin "$url"
+    [[ "$(github_repo X)" == "$TEMPLATE_OWNER/X" ]] || die "self-test: github_repo did not fall back for $url"
+  done
+  git remote set-url origin git@github.com:Other/Repo.git/
+  [[ "$(github_repo X)" == "Other/Repo" ]] || die "self-test: github_repo misread ssh origin"
+  git remote remove origin
+  [[ "$(github_repo X)" == "$TEMPLATE_OWNER/X" ]] || die "self-test: github_repo did not fall back without origin"
   local leftovers
   leftovers="$(git grep -n -I -e "$TEMPLATE_NAME" -e "$TEMPLATE_ID" || true)"
   # templatePolicyPreflight stays in renamed plugins on purpose (it keeps template blocks from coming back).
@@ -201,7 +252,7 @@ main() {
   cd "$(dirname "${BASH_SOURCE[0]}")/.."
   case "${1:-}" in
     --self-test) self_test ;;
-    "" | -h | --help) sed -n '2,12p' "$SELF" | sed 's/^# \{0,1\}//'; [[ -n "${1:-}" ]] ;;
+    "" | -h | --help) sed -n '2,13p' "$SELF" | sed 's/^# \{0,1\}//'; [[ -n "${1:-}" ]] ;;
     *) rename "$1" "${2:-$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')}" ;;
   esac
 }

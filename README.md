@@ -47,7 +47,7 @@ On every push to `main`, `.github/workflows/publish.yml` calls the shared
 2. Fetches `MAVEN_USERNAME` / `MAVEN_PASSWORD` from Infisical via OIDC
 3. Runs `./gradlew publishMavenPublicationToSneakyrpRepository`
 
-While `gradle/template.gradle.kts` exists, the publish task refuses to run outside `Team-Sneakymouse/EmptyPlugin`, so the first push of a new repository fails instead of deploying a jar named `EmptyPlugin`. The rename script deletes that file; push the renamed result to `main` to publish the new plugin.
+The publish job only runs in `Team-Sneakymouse/EmptyPlugin`, so any copy of the template (from "Use this template", a fork, or a pushed clone) skips publishing instead of deploying a jar named `EmptyPlugin`. The rename script points that check (and the other GitHub URLs) at the new repository. Push the renamed result to `main` to publish the new plugin.
 
 `.github/workflows/ci.yml` calls the same workflow with `publish: false` for pull requests (pushes to `main` are already built by the publish workflow).
 Both run on the organization's self-hosted `alphaarcadeus` runner. The steps live in the shared repository, so
@@ -92,15 +92,16 @@ git diff --cached
 The script renames the Gradle project, Maven `artifactId`, POM and `paper-plugin.yml` metadata, the `com.emptyplugin`
 package (main and test, via `git mv`), the main class, `IDENTIFIER`, the command, permissions and tests. It also removes
 the template-only `AGENTS.md` rules (every block between the `EMPTYPLUGIN-ONLY LOCAL EXCEPTION` markers), replaces this
-README with a short stub, and deletes `gradle/template.gradle.kts` (publish guard and self-test) and itself.
+README with a short stub, and deletes `gradle/template.gradle.kts` (its self-test) and itself. The GitHub URLs and the
+`publish.yml` repository check point at the `origin` remote's GitHub repository, or `Team-Sneakymouse/<PluginName>`
+when `origin` is missing or still the template.
 
 Still by hand:
 
-1. Rename the GitHub repo / local folder. The script assumes the repository is `Team-Sneakymouse/<PluginName>`; fix the URLs in `build.gradle.kts` and `paper-plugin.yml` if not.
-2. Write the real plugin description in `README.md`, `build.gradle.kts` and `paper-plugin.yml`.
-3. Ensure Infisical OIDC allowlists the new repo. Public repos inherit the organization secrets; only private repos need repository-level `INFISICAL_IDENTITY_ID` and `INFISICAL_DOMAIN` secrets.
-4. Keep the publication named `maven`, or pass `publish-task: <task>` under `with:` in `publish.yml` (the shared workflow defaults to `publishMavenPublicationToSneakyrpRepository`).
-5. Keep the `SneakyUtils` server dependency unless you deliberately remove that shared util usage.
+1. Write the real plugin description in `README.md`, `build.gradle.kts` and `paper-plugin.yml`.
+2. Ensure Infisical OIDC allowlists the new repo. Public repos inherit the organization secrets; only private repos need repository-level `INFISICAL_IDENTITY_ID` and `INFISICAL_DOMAIN` secrets.
+3. Keep the publication named `maven`, or pass `publish-task: <task>` under `with:` in `publish.yml` (the shared workflow defaults to `publishMavenPublicationToSneakyrpRepository`).
+4. Keep the `SneakyUtils` server dependency unless you deliberately remove that shared util usage.
 
 Template-only rules stay out of the new repository: follow the shared policy unless it records a separately approved, accurately scoped exception. `./gradlew templatePolicyPreflight` (part of `check`) fails if a template-only block reappears in `AGENTS.md`.
 

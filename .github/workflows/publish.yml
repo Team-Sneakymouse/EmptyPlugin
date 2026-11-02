@@ -15,6 +15,8 @@ concurrency:
 
 jobs:
   publish:
+    # Copies of the template only publish once rename-template.sh has rewritten this to their repository.
+    if: github.repository == 'Team-Sneakymouse/EmptyPlugin'
     uses: Team-Sneakymouse/ci/.github/workflows/gradle-publish.yml@main
     secrets:
       INFISICAL_IDENTITY_ID: ${{ secrets.INFISICAL_IDENTITY_ID }}
