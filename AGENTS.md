@@ -20,7 +20,7 @@ Do not substitute remembered rules, a web mirror, or an unlisted path. Follow lo
 | Runtime targets | Paper API 26.2, Java/Kotlin JVM 25 |
 | Shared Paper utils | SneakyUtils `compileOnly` + runtime `depend` (see team policy `sneakyutils.md`) |
 | Deployment | push to `main` triggers publish via `.github/workflows/publish.yml` |
-| Build output | `~/.cache/EmptyPlugin-gradle-build` (keeps Gradle off FUSE/NTFS checkouts; see README) |
+| Build output | `~/.cache/EmptyPlugin-gradle-build` (keeps Gradle off FUSE/NTFS checkouts) |
 
 Custom item look, CraftEngine/pack model id, server resource pack, or ItemDisplay place/orient → read `<policy-root>/policy/paper-items.md`.
 
@@ -50,16 +50,17 @@ Template only: `bash scripts/rename-template.sh <PluginName>` turns this checkou
 
 ## Architecture (keep plugins testable)
 
-Put code where it can be tested without a live server when possible:
+Put code where it can be tested without a live server when possible. Only `commands/` exists at the start; add the
+other packages when the plugin needs them:
 
 ```text
-src/main/kotlin/<package>/
+src/main/kotlin/com/<id>/
   EmptyPlugin.kt       # Bootstrap only: config, register commands/listeners
+  commands/            # CommandBase, ReloadCommand. Parse args, call services, send messages
   service/             # Rules, calculations, domain logic — no org.bukkit imports
-  command/             # Parse args, call services, send messages
   listener/            # Events → services
   util/                # Plugin-specific pure helpers (do not copy TextUtility here)
-src/test/kotlin/<package>/   # Mirror packages; *Test.kt next to the unit under test
+src/test/kotlin/com/<id>/   # Mirror packages; *Test.kt next to the unit under test
 ```
 
 Shared text helpers (`com.sneakyutils.util.TextUtility`) come from the **SneakyUtils**
@@ -69,9 +70,8 @@ Guidelines:
 
 - **Business logic** belongs in `service/` or `util/`, not in listeners or command `execute` bodies.
 - **Commands and listeners** are thin adapters over services.
-- Avoid new uses of **`EmptyPlugin.instance`**; prefer constructor parameters (`JavaPlugin`, services) so tests stay simple.
+- Avoid global plugin singletons; prefer constructor parameters (`JavaPlugin`, services) so tests stay simple.
 - Classes loaded by MockBukkit (plugin, commands) must be **`open`** in Kotlin.
-- `CommandBase` sets permission to `{identifier}.command.{name}` using `EmptyPlugin.IDENTIFIER`.
 
 ## Testing
 
@@ -81,8 +81,8 @@ Run `./gradlew check` before finishing. Do not rely on `./gradlew runServer` as 
 
 | Kind of code | Approach |
 |--------------|----------|
-| `util/`, `service/` (no Bukkit) | Plain **JUnit 5** (see `TextUtilityTest` — uses SneakyUtils) |
-| Permissions, command wiring, enable/disable | **MockBukkit** (`mockbukkit-v26.2`, see `EmptyPluginTest`, `CommandBaseTest`) |
+| `util/`, `service/` (no Bukkit) | Plain **JUnit 5** (no `MockBukkit` import) |
+| Permissions, command wiring, enable/disable | **MockBukkit** (`mockbukkit-v26.2`) |
 | Full gameplay / integration | Manual **`runServer`** smoke tests |
 
 MockBukkit lifecycle in every MockBukkit test class:
