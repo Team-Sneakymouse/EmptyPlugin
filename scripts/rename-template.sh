@@ -2,7 +2,7 @@
 # Turn a fresh copy of the EmptyPlugin template into a new plugin, then delete this script.
 #
 # Usage:
-#   bash scripts/rename-template.sh <PluginName> [plugin-id]
+#   bash scripts/rename-template.sh <PluginName> [plugin-id] [--skip-template-check]
 #   bash scripts/rename-template.sh --self-test    # template CI: rename a scratch copy and verify it
 #
 # <PluginName>  class, jar and Gradle project name, e.g. LootTables.
@@ -11,6 +11,10 @@
 #
 # The GitHub URLs and the publish.yml repository check use the origin remote's GitHub repository,
 # or Team-Sneakymouse/<PluginName> if origin is missing or still points at the template.
+#
+# The script first checks that HEAD holds exactly the files of the template's current main branch, so a
+# new plugin never starts from a stale copy (old team-policy stubs, old build setup). Pass
+# --skip-template-check when the differences are deliberate edits made before renaming.
 set -euo pipefail
 
 TEMPLATE_OWNER="Team-Sneakymouse"
@@ -21,6 +25,10 @@ BLOCK_BEGIN='<!-- EMPTYPLUGIN-ONLY LOCAL EXCEPTION'
 BLOCK_END='<!-- END EMPTYPLUGIN-ONLY LOCAL EXCEPTION -->'
 TEMPLATE_GRADLE="gradle/template.gradle.kts"
 SELF="scripts/rename-template.sh"
+# Where the current template lives; the self-test points this at a local repository.
+TEMPLATE_URL="${RENAME_TEMPLATE_URL:-https://github.com/$TEMPLATE_OWNER/$TEMPLATE_NAME.git}"
+TEMPLATE_BRANCH="main"
+SKIP_TEMPLATE_CHECK=0
 
 die() {
   printf 'rename-template: %s\n' "$*" >&2
@@ -49,6 +57,30 @@ validate() {
   esac
 }
 
+# Dies unless HEAD has the same files as the template's current main. Compares tree hashes, which match across
+# repositories with the same content, so this works for a copied checkout and for a "Use this template" repository.
+check_template_current() {
+  local tmp ours theirs changed
+  tmp="$(mktemp -d)"
+  if ! git clone -q --depth=1 --branch "$TEMPLATE_BRANCH" "$TEMPLATE_URL" "$tmp/template" >/dev/null 2>&1; then
+    rm -rf "$tmp"
+    die "could not fetch the current template from $TEMPLATE_URL to check that this copy is up to date; retry online, or pass --skip-template-check"
+  fi
+  ours="$(git rev-parse 'HEAD^{tree}')"
+  theirs="$(git -C "$tmp/template" rev-parse 'HEAD^{tree}')"
+  if [[ "$ours" != "$theirs" ]]; then
+    changed="$(diff <(git ls-tree -r HEAD) <(git -C "$tmp/template" ls-tree -r HEAD) |
+      awk -F'\t' '/^[<>] /{print "  " $2}' | sort -u || true)"
+    rm -rf "$tmp"
+    die "this copy differs from the current template ($TEMPLATE_URL, $TEMPLATE_BRANCH) in:
+$changed
+Start from an up-to-date copy (git pull --ff-only in your $TEMPLATE_NAME checkout, or GitHub's \"Use this template\"),
+so the new plugin gets the current team-policy stubs and build setup.
+If the differences are your own deliberate edits, run again with --skip-template-check."
+  fi
+  rm -rf "$tmp"
+}
+
 rename() {
   local name="$1" id="$2"
   validate "$name" "$id"
@@ -57,6 +89,7 @@ rename() {
     die "this checkout is not an unrenamed $TEMPLATE_NAME template (settings.gradle.kts or $TEMPLATE_GRADLE changed)"
   [[ -z "$(git status --porcelain)" ]] ||
     die "commit or stash your changes first, so the rename shows up as one reviewable diff"
+  ((SKIP_TEMPLATE_CHECK)) || check_template_current
 
   # 1. Packages and files named after the template.
   local set
@@ -176,9 +209,11 @@ EOF
 }
 
 SCRATCH=""
+SCRATCH_TEMPLATES=""
 self_test() {
   SCRATCH="$(mktemp -d)"
-  trap 'rm -rf "$SCRATCH"' EXIT
+  SCRATCH_TEMPLATES="$(mktemp -d)"
+  trap 'rm -rf "$SCRATCH" "$SCRATCH_TEMPLATES"' EXIT
 
   # Copy the working tree as it is now (tracked + new files, uncommitted edits included) into a fresh repo.
   local file existing=()
@@ -191,11 +226,21 @@ self_test() {
     git init -q && git config core.safecrlf false
     git add -A
     git -c user.name=rename-smoke -c user.email=rename-smoke@invalid -c commit.gpgsign=false commit -qm template
+    git branch -M "$TEMPLATE_BRANCH"
   )
 
-  local script="$SCRATCH/$SELF"
+  # Stand-ins for the published template: one matching the scratch copy, one with a newer commit.
+  local current="$SCRATCH_TEMPLATES/current" newer="$SCRATCH_TEMPLATES/newer"
+  git clone -q --bare "$SCRATCH" "$current"
+  git clone -q "$SCRATCH" "$newer"
+  touch "$newer/added-upstream"
+  git -C "$newer" add added-upstream
+  git -C "$newer" -c user.name=rename-smoke -c user.email=rename-smoke@invalid -c commit.gpgsign=false commit -qm newer
+
+  local script="$SCRATCH/$SELF" template_url="$current"
+  run_script() { RENAME_TEMPLATE_URL="$template_url" bash "$script" "$@"; }
   expect_failure() {
-    if bash "$script" "$@" >/dev/null 2>&1; then die "self-test: expected '$*' to be rejected"; fi
+    if run_script "$@" >/dev/null 2>&1; then die "self-test: expected '$*' to be rejected"; fi
   }
   expect_failure bad-name
   expect_failure "$TEMPLATE_NAME"
@@ -205,10 +250,24 @@ self_test() {
   expect_failure SmokeTestPlugin
   rm "$SCRATCH/untracked-file"
 
+  # Stale copies and an unreachable template are refused; --skip-template-check lets a stale copy through.
+  template_url="$newer"
+  local refusal
+  if refusal="$(run_script SmokeTestPlugin 2>&1)"; then die "self-test: stale copy not refused"; fi
+  [[ "$refusal" == *added-upstream* ]] || die "self-test: stale-copy refusal does not name the differing file"
+  [[ -z "$(git -C "$SCRATCH" status --porcelain)" ]] || die "self-test: refused rename changed the checkout"
+  template_url="$SCRATCH_TEMPLATES/missing"
+  expect_failure SmokeTestPlugin
+  local skipped="$SCRATCH_TEMPLATES/skipped"
+  git clone -q "$SCRATCH" "$skipped"
+  RENAME_TEMPLATE_URL="$newer" bash "$skipped/$SELF" SkipCheckPlugin --skip-template-check >/dev/null ||
+    die "self-test: --skip-template-check did not allow a stale copy"
+  template_url="$current"
+
   # A repository named differently from the plugin; the URLs and publish check must follow origin.
   local repo="Smoke-Owner/smoke-test-repo"
   git -C "$SCRATCH" remote add origin "https://github.com/$repo.git"
-  bash "$script" SmokeTestPlugin >/dev/null
+  run_script SmokeTestPlugin >/dev/null
 
   cd "$SCRATCH"
   grep -qF "if: github.repository == '$repo'" .github/workflows/publish.yml ||
@@ -250,9 +309,14 @@ self_test() {
 
 main() {
   cd "$(dirname "${BASH_SOURCE[0]}")/.."
+  local args=() arg
+  for arg in "$@"; do
+    if [[ "$arg" == --skip-template-check ]]; then SKIP_TEMPLATE_CHECK=1; else args+=("$arg"); fi
+  done
+  set -- "${args[@]+"${args[@]}"}"
   case "${1:-}" in
     --self-test) self_test ;;
-    "" | -h | --help) sed -n '2,13p' "$SELF" | sed 's/^# \{0,1\}//'; [[ -n "${1:-}" ]] ;;
+    "" | -h | --help) sed -n '2,17p' "$SELF" | sed 's/^# \{0,1\}//'; [[ -n "${1:-}" ]] ;;
     *) rename "$1" "${2:-$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')}" ;;
   esac
 }
