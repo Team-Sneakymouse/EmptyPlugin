@@ -45,7 +45,7 @@ Custom item look, CraftEngine/pack model id, server resource pack, or ItemDispla
 Builds require a **git checkout** with at least one commit (version is derived from `HEAD`).
 
 <!-- EMPTYPLUGIN-ONLY LOCAL EXCEPTION: remove from repositories created from this template -->
-Template only: `bash scripts/rename-template.sh <PluginName>` turns this checkout into a new plugin, and `./gradlew templateRenameSmoke` (part of `check` here) tests that script on a scratch copy. Template-only Gradle logic lives in `gradle/template.gradle.kts`, which the script deletes.
+Template only: `bash scripts/rename-template.sh <PluginName>` turns this checkout into a new plugin (it refuses copies whose files differ from the template's current `main` on GitHub unless given `--skip-template-check`), and `./gradlew templateRenameSmoke` (part of `check` here) tests that script on a scratch copy. Template-only Gradle logic lives in `gradle/template.gradle.kts`, which the script deletes.
 <!-- END EMPTYPLUGIN-ONLY LOCAL EXCEPTION -->
 
 ## Architecture (keep plugins testable)

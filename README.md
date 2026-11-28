@@ -80,7 +80,11 @@ required server deps with no matching `compileOnly` jar fail the task.
 
 ## Rename checklist (new plugin from this template)
 
-Run the rename script from a clean checkout, then review and commit the staged result:
+Run the rename script from a clean, up-to-date copy, then review and commit the staged result. The script first
+fetches the template's current `main` from GitHub and refuses to run if your files differ from it, so a new plugin never
+starts with outdated team-policy stubs or build setup. Use GitHub's "Use this template", or `git pull --ff-only` your
+EmptyPlugin checkout before copying it. If the differences are deliberate edits you made before renaming, pass
+`--skip-template-check`.
 
 ```bash
 bash scripts/rename-template.sh LootTables            # package com.loottables, command /loottables
